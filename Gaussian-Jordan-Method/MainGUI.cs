@@ -16,11 +16,12 @@ namespace ConsoleApplication6
     public partial class MainGUI : Form
     {
         GaussianJordanElimination gaus = new GaussianJordanElimination();
+        private int det;
+
         public MainGUI()
         {
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
-
         }
 
         private void MainGUI_Load(object sender, EventArgs e)
@@ -43,22 +44,20 @@ namespace ConsoleApplication6
 
         }
 
-        private DataTable createTable(int rows, int cols) {
+        private DataTable createTable(int rows, int cols)
+        {
             DataTable table = new DataTable();
             for (int x = 0; x < cols; x++)
             {
                 table.Columns.Add("X" + x, typeof(double));
-                
             }
             for (int y = 0; y < rows; y++)
             {
-                int[,] array = new int[1, cols];
-
-                table.Rows.Add(array.Cast<object>().ToArray());
+                table.Rows.Add(); // Add empty rows
             }
-
             return table;
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
             int rows = 0;
@@ -77,7 +76,7 @@ namespace ConsoleApplication6
                 DataTable table = createTable(rows, cols);
                 dataGridView1.Visible = true;
                 dataGridView1.DataSource = table;
-                dataGridView1.Size = new Size((cols * 41) + 30, (rows * 25) + 15);
+                dataGridView1.Size = new Size((cols * 70) + 30, (rows * 25) + 15); // Adjusted column width
                 Console.WriteLine(rows + " " + cols);
             }
             catch (FormatException)
@@ -85,7 +84,6 @@ namespace ConsoleApplication6
                 MessageBox.Show("Rows and Columns must be an integer");
             }
         }
-
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -98,25 +96,47 @@ namespace ConsoleApplication6
             {
                 for (int x = 0; x < cols; x++)
                 {
-                    data[y, x] = double.Parse(table.Rows[y][x].ToString());
+                    if (!double.TryParse(table.Rows[y][x].ToString(), out data[y, x]))
+                    {
+                        MessageBox.Show("Invalid input at row " + (y + 1) + ", column " + (x + 1));
+                        return;
+                    }
                 }
             }
 
-            double det = GaussianJordanElimination.DET(rows, data);
+            //double det = GaussianJordanElimination.DET(rows, data);
 
-            if (det == 0)
-            {
-                richTextBox1.Text = "Can not be solved as determinant=0";
-            }
-            else
-            {
+            
+
+            
+            
                 gaus.setArray(data);
-                richTextBox1.Text = gaus.solve();
-            }
+                string solution = gaus.solve();
+
+                richTextBox1.Text = "Step 1: Create the Augmented Matrix\n";
+                richTextBox1.Text += "The augmented matrix for this system is:\n";
+                richTextBox1.Text += gaus.matToString(data) + "\n";
+
+                if (solution.Contains("infinite set of solutions"))
+                {
+                    richTextBox1.Text += "Step 2: Perform Gaussian Jordan Elimination\n";
+                    richTextBox1.Text += "\n";
+                    richTextBox1.Text += " the matrix transformations step by step.\n\n";
+                    richTextBox1.Text += "Step-by-Step Gaussian Jordan Elimination:\n";
+                    richTextBox1.Text += solution;
+                }
+                else
+                {
+                    richTextBox1.Text += "Solution:\n";
+                    richTextBox1.Text += solution;
+                    //richTextBox1.Text += "\nNow, let's determine the nature of the solution based on the structure of the augmented matrix to see if it has no solution or an infinite set of solutions.";
+                    richTextBox1.Text += "DONE";
+                }
+            
         }
 
 
-        private void panel2_Paint(object sender, PaintEventArgs e)
+                private void panel2_Paint(object sender, PaintEventArgs e)
         {
 
         }
